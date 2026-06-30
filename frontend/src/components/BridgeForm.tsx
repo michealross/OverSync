@@ -412,6 +412,12 @@ export default function BridgeForm({ ethAddress, stellarAddress, signStellarTran
       return;
     }
 
+    // Guard: mainnet gated — defence in depth
+    if (networkState?.guard?.disableUiActions) {
+      alert(`Action blocked: ${networkState.guard.reason}`);
+      return;
+    }
+
     // Guard: network mismatch — should be caught by the disabled button too,
     // but check again at submission time for defence in depth.
     if (networkState?.hasAnyMismatch) {

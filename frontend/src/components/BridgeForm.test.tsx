@@ -47,6 +47,13 @@ const nullSigner = vi.fn().mockResolvedValue('');
 
 const testnetState: NetworkModeState = {
   mode: 'testnet',
+  guard: {
+    mode: 'testnet',
+    isMainnetEnabled: false,
+    status: 'testnet',
+    reason: 'Testnet mode is active. Only Sepolia and Stellar Testnet operations are supported.',
+    disableUiActions: false,
+  },
   expectedEthChainIdHex: '0xaa36a7',
   expectedStellarPassphrase: 'Test SDF Network ; September 2015',
   metamaskChainId: '0xaa36a7',
@@ -232,6 +239,38 @@ describe('BridgeForm network mismatch guardrails', () => {
 
     // The button should be disabled, but we verify the guard exists in handleSubmit
     const submitBtn = screen.getByRole('button', { name: /Network Mismatch/i });
+    expect(submitBtn).toBeDisabled();
+  });
+
+  test('disables actions and shows gated warning when mainnet is gated/disabled', () => {
+    const gatedState: NetworkModeState = {
+      ...testnetState,
+      mode: 'mainnet',
+      guard: {
+        mode: 'mainnet',
+        isMainnetEnabled: false,
+        status: 'mainnet_gated',
+        reason: 'Mainnet operations are currently gated pending final security audits.',
+        disableUiActions: true,
+      },
+    };
+
+    render(
+      <BridgeForm
+        ethAddress="0x1234567890123456789012345678901234567890"
+        stellarAddress="GABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890"
+        signStellarTransaction={nullSigner}
+        networkState={gatedState}
+      />,
+    );
+
+    // Should display the gated warning banner with expected reason
+    expect(
+      screen.getByText(/Mainnet operations are currently gated pending final security audits./i)
+    ).toBeInTheDocument();
+
+    // The submit button should show "Mainnet Gated" and be disabled
+    const submitBtn = screen.getByRole('button', { name: /Mainnet Gated/i });
     expect(submitBtn).toBeDisabled();
   });
 });

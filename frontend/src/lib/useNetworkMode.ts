@@ -111,18 +111,7 @@ export function useNetworkMode(opts: {
     return () => window.removeEventListener('popstate', handler);
   }, []);
 
-  // When mainnet is disabled, strip ?network=mainnet from the URL so bookmarks stay on testnet.
-  useEffect(() => {
-    if (typeof window === 'undefined' || isMainnetEnabled()) {
-      return;
-    }
-    const url = new URL(window.location.href);
-    if (url.searchParams.get('network') === 'mainnet') {
-      url.searchParams.set('network', 'testnet');
-      window.history.replaceState({}, '', url.toString());
-      setLocalMode('testnet');
-    }
-  }, []);
+  // Redirection effect that stripped ?network=mainnet has been removed to preserve the mainnet gated state intent.
 
   const refreshMetamask = useCallback(async () => {
     if (typeof window === 'undefined' || !window.ethereum) {
@@ -270,10 +259,6 @@ export function useNetworkMode(opts: {
 
   const setMode = useCallback(
     async (next: NetworkMode): Promise<{ ok: boolean; reason?: string }> => {
-      if (next === 'mainnet' && !isMainnetEnabled()) {
-        return { ok: false, reason: 'mainnet-disabled' };
-      }
-
       if (next === mode) {
         return { ok: true };
       }

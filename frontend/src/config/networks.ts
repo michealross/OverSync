@@ -17,9 +17,6 @@ export const isMainnetEnabled = (): boolean => {
 
 /** Clamp requested mode when mainnet is temporarily disabled. */
 export const resolveNetworkMode = (requested: AppNetworkMode): AppNetworkMode => {
-  if (requested === 'mainnet' && !isMainnetEnabled()) {
-    return 'testnet';
-  }
   return requested;
 };
 
