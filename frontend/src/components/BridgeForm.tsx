@@ -412,6 +412,12 @@ export default function BridgeForm({ ethAddress, stellarAddress, signStellarTran
       return;
     }
 
+    // Guard: mainnet gated — defence in depth
+    if (networkState?.guard?.disableUiActions) {
+      alert(`Action blocked: ${networkState.guard.reason}`);
+      return;
+    }
+
     // Guard: network mismatch — should be caught by the disabled button too,
     // but check again at submission time for defence in depth.
     if (networkState?.hasAnyMismatch) {
@@ -1179,7 +1185,7 @@ export default function BridgeForm({ ethAddress, stellarAddress, signStellarTran
     return { evmMismatch, stellarMismatch, evmDisconnected, stellarDisconnected, label, severity, blocked };
   }, [networkState]);
 
-  const isBlocked = mismatchInfo?.blocked === true;
+  const isBlocked = mismatchInfo?.blocked === true || networkState?.guard?.disableUiActions === true;
   const mismatchLabel = mismatchInfo?.label ?? null;
   // ---- end mismatch guardrails ----
 
@@ -1430,6 +1436,16 @@ export default function BridgeForm({ ethAddress, stellarAddress, signStellarTran
               </p>
             </div>
           )}
+
+          {/* Mainnet Gated Warning */}
+          {networkState?.guard?.disableUiActions && (
+            <div className="flex items-start gap-2.5 rounded-2xl border border-red-500/35 bg-red-500/12 p-3 text-left">
+              <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-red-300" />
+              <p className="text-sm text-red-100/90">
+                {networkState.guard.reason}
+              </p>
+            </div>
+          )}
           
           {/* Submit Button */}
           <button
@@ -1443,11 +1459,13 @@ export default function BridgeForm({ ethAddress, stellarAddress, signStellarTran
           >
             {!walletsConnected
               ? 'Connect Wallet'
-              : isBlocked
-                ? 'Network Mismatch'
-                : isSubmitting
-                  ? statusMessage || 'Processing...'
-                  : 'Bridge'
+              : networkState?.guard?.disableUiActions
+                ? 'Mainnet Gated'
+                : isBlocked
+                  ? 'Network Mismatch'
+                  : isSubmitting
+                    ? statusMessage || 'Processing...'
+                    : 'Bridge'
             }
           </button>
         </form>
