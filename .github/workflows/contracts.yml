@@ -10,6 +10,9 @@ on:
       - 'contracts/**'
       - '.github/workflows/contracts.yml'
 
+permissions:
+  contents: read
+
 jobs:
   foundry:
     name: Foundry fuzz + invariant tests

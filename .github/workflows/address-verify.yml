@@ -30,6 +30,9 @@ on:
       - 'scripts/verify-addresses.mjs'
       - '.github/workflows/address-verify.yml'
 
+permissions:
+  contents: read
+
 jobs:
   verify:
     name: Docs/config address consistency
